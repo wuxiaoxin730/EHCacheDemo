@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/main.css">
+    <title>EHCache Clustering Demo</title>
+</head>
+<body>
+    <div class="container">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <img src="/image/thymeleaf.png" width="50" height="50" alt="Thymeleaf logo" id="headerImage">
+            <a class="navbar-brand" href="/" th:text="#{ehcache.main.header.name}">Thyleaf</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Cache Name
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdown" th:unless="${#lists.isEmpty(cacheNames)}">
+                            <a class="dropdown-item" href="#" th:href="@{/init(currentCacheName=${cacheName})}" th:each="cacheName:${cacheNames}">
+                                <span th:text="${{cacheName}}">Cache Name</span>
+                            </a>
+                        </div>
+                    </li>
+                </ul>
+                <form class="form-inline my-2 my-lg-0" th:action="@{/search}">
+                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit" >Search</button>
+                </form>
+                &nbsp;&nbsp;
+                <form class="form-inline my-2 my-lg-0" th:action="@{/clear}">
+                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit" th:onclick="'javascript:return clearUp()'" >Clear All</button>
+                </form>
+            </div>
+        </nav>
+
+        <br>
+        <h1 th:if="${mainVO != null}"><span class="badge badge-secondary" th:text="${{mainVO.currentCacheName}}">New</span></h1>
+        <br>
+
+        <form action="#" th:action="@{/add}" th:object="${cacheVO}">
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="cacheKey">Key</label>
+                    <input type="text" class="form-control" id="cacheKey" name="cacheKey" placeholder="Cache Key">
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="cacheValue">Value</label>
+                    <input type="text" class="form-control" id="cacheValue" name="cacheValue" placeholder="Cache Value">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary" th:onclick="'javascript:return addElement($(\'#cacheKey\').val())'">Add</button>
+        </form>
+
+        <br>
+
+        <table class="table" th:unless="${mainVO == null || #lists.isEmpty(mainVO.elements)}">
+            <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Cache Key</th>
+                <th scope="col">Cache Value</th>
+                <th scope="col">Create Time</th>
+                <th scope="col">Operation</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="element : ${mainVO.elements}">
+                <th th:text="${elementStat.count}" scope="row">1</th>
+                <td th:text="${{element.key}}">Key</td>
+                <td th:text="${{element.value}}">Value</td>
+                <td th:text="${{element.createTime}}">2017-11-26 18:58:00</td>
+                <td>
+                    <a th:href="@{/delete(cacheKey=${element.key})}" th:onclick="'javascript:return removeElement();'">Delete</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script src="js/lib/jquery-3.2.1.slim.min.js"></script>
+    <script src="js/lib/popper.min.js"></script>
+    <script src="js/lib/bootstrap.min.js"></script>
+    <script src="js/lib/bootstrap.bundle.min.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
