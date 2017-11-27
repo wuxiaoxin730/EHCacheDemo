@@ -53,7 +53,7 @@ public class EHCacheServiceImpl implements IEHCacheService {
                 CacheVO cacheVO = new CacheVO();
                 cacheVO.setKey(key.toString());
                 cacheVO.setValue(elements.get(key).getObjectValue().toString());
-                cacheVO.setCreateTime(new Date(elements.get(key).getCreationTime()));
+                cacheVO.setCreateTime(new Date(elements.get(key).getLatestOfCreationAndUpdateTime()));
                 result.add(cacheVO);
             }
         }

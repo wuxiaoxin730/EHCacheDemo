@@ -3,12 +3,12 @@
 
     <diskStore path="java.io.tmpdir"/>
 
-    <!--<cacheManagerPeerProviderFactory-->
-            <!--class="net.sf.ehcache.distribution.RMICacheManagerPeerProviderFactory"-->
-            <!--properties="peerDiscovery=automatic, multicastGroupAddress=230.0.0.1,multicastGroupPort=4446, timeToLive=32"/>-->
     <cacheManagerPeerProviderFactory
             class="net.sf.ehcache.distribution.RMICacheManagerPeerProviderFactory"
-            properties="peerDiscovery=manual, hostName=127.0.0.1, port=40001,socketTimeoutMillis=12000, rmiUrls=//127.0.0.1:40002/ClusteringCache"/>
+            properties="peerDiscovery=automatic, multicastGroupAddress=230.0.0.1,multicastGroupPort=4446, timeToLive=32"/>
+    <!--<cacheManagerPeerProviderFactory-->
+            <!--class="net.sf.ehcache.distribution.RMICacheManagerPeerProviderFactory"-->
+            <!--properties="peerDiscovery=manual, hostName=127.0.0.1, port=40001,socketTimeoutMillis=12000, rmiUrls=//127.0.0.1:40002/ClusteringCache"/>-->
 
     <cacheManagerPeerListenerFactory
             class="net.sf.ehcache.distribution.RMICacheManagerPeerListenerFactory"
