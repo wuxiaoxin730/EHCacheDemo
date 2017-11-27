@@ -18,7 +18,7 @@ public class SpringWebConfiguration implements WebMvcConfigurer {
     @Bean
     public DateFormatter dateFormatter() {
         DateFormatter dateFormatter = new DateFormatter();
-        dateFormatter.setPattern("yyyy-MM-dd HH:mm:dd");
+        dateFormatter.setPattern("yyyy-MM-dd HH:mm:ss");
         return dateFormatter;
     }
 }
