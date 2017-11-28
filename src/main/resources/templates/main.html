@@ -29,17 +29,46 @@
                     </li>
                 </ul>
                 <form class="form-inline my-2 my-lg-0" th:action="@{/search}">
-                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit" >Search</button>
+                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit" >
+                        <span class="glyphicon glyphicon-search"></span>
+                        Search
+                    </button>
                 </form>
                 &nbsp;&nbsp;
                 <form class="form-inline my-2 my-lg-0" th:action="@{/clear}">
-                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit" th:onclick="'javascript:return clearUp()'" >Clear All</button>
+                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit" th:onclick="'javascript:return clearUp()'" >
+                        <span class="glyphicon glyphicon-trash"></span>
+                        Clear All
+                    </button>
                 </form>
             </div>
         </nav>
-
         <br>
-        <h1 th:if="${mainVO != null}"><span class="badge badge-secondary" th:text="${{mainVO.currentCacheName}}">New</span></h1>
+        <!--<h1 th:if="${mainVO != null}">-->
+            <!--<a th:href="@{/info(currentCacheName=${mainVO.currentCacheName})}">-->
+            <!--<span class="badge badge-secondary" th:text="${{mainVO.currentCacheName}}">New</span>-->
+            <!--</a>-->
+        <!--</h1>-->
+        <div id="exampleAccordion" data-children=".item" th:if="${mainVO != null}">
+            <div class="item">
+                <a data-toggle="collapse" data-parent="#exampleAccordion" href="#exampleAccordion1" aria-expanded="true" aria-controls="exampleAccordion1">
+                    <span class="badge badge-secondary" th:text="${{mainVO.currentCacheName}}">New</span>
+                </a>
+                <div id="exampleAccordion1" class="collapse" role="tabpanel">
+                    <p class="mb-3">
+                        <ul class="list-group" th:each="info : ${infoList}">
+                            <li class="list-group-item">
+                                <div class="row justify-content-between">
+                                    <div class="col-4" th:text="${{info.name}}"></div>
+                                    <div class="col-4" th:text="${{info.value}}"></div>
+                                </div>
+                            </li>
+                        </ul>
+                    </p>
+                </div>
+            </div>
+        </div>
+
         <br>
 
         <form action="#" th:action="@{/add}" th:object="${cacheVO}">
