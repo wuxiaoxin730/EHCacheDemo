@@ -3,6 +3,7 @@ package com.wx.ehcache.util;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
+import net.sf.ehcache.config.CacheConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,12 +25,14 @@ public class EHCacheUtil {
 
     public static void createDefaultCache(String cacheName) {
         if (!cacheManager.cacheExists(cacheName)) {
-            cacheManager.addCache(new Cache(cacheName,
-                    Constants.DEFAULT_MAX_ELEMENTS_IN_MEMERY,
-                    Constants.DEFAULT_OVERFLOW_TO_DISK,
-                    Constants.DEFAULT_EXTERNAL,
-                    Constants.DEFAULT_TIME_TO_LIVE_SECONDS,
-                    Constants.DEFAULT_TIME_TO_IDLE_SECONDS));
+            CacheConfiguration cacheConfiguration = new CacheConfiguration(cacheName, Constants.DEFAULT_MAX_ENTRIES_LOCAL_HEAP);
+            CacheConfiguration.CacheEventListenerFactoryConfiguration cacheEventListenerFactoryConfiguration = new CacheConfiguration.CacheEventListenerFactoryConfiguration();
+            cacheEventListenerFactoryConfiguration.setClass(Constants.CACHE_EVENT_LISTENER_FACTORY_CLASS);
+            cacheConfiguration.addCacheEventListenerFactory(cacheEventListenerFactoryConfiguration);
+            cacheManager.addCache(new Cache(cacheConfiguration));
+            if("ClusteringCache".equalsIgnoreCase(cacheName)){
+                cacheManager.getCacheManagerEventListenerRegistry().notifyCacheAdded(cacheName);
+            }
         } else {
             logger.warn("The cache(" + cacheName + ") already existed");
         }
