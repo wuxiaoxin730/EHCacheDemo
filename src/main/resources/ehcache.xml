@@ -4,15 +4,11 @@
     <diskStore path="java.io.tmpdir"/>
 
     <cacheManagerPeerProviderFactory
-            class="net.sf.ehcache.distribution.RMICacheManagerPeerProviderFactory"
-            properties="peerDiscovery=automatic, multicastGroupAddress=239.0.0.1,multicastGroupPort=4446, timeToLive=255"/>
-    <!--<cacheManagerPeerProviderFactory-->
-            <!--class="net.sf.ehcache.distribution.RMICacheManagerPeerProviderFactory"-->
-            <!--properties="peerDiscovery=manual, socketTimeoutMillis=12000, rmiUrls=//10.52.124.80:40002/ClusteringCache|//10.52.124.80:40001/ClusteringCache|//10.52.124.32:40001/ClusteringCache"/>-->
-
-    <cacheManagerPeerListenerFactory
-            class="net.sf.ehcache.distribution.RMICacheManagerPeerListenerFactory"
-            properties="port=40002,socketTimeoutMillis=200000"/>
+            class="net.sf.ehcache.distribution.jgroups.JGroupsCacheManagerPeerProviderFactory"
+            properties="connect=UDP(mcast_addr=231.12.21.132;mcast_port=45566;):PING:
+MERGE2:FD_SOCK:VERIFY_SUSPECT:pbcast.NAKACK:UNICAST:pbcast.STABLE:FRAG:pbcast.GMS"
+            propertySeparator="::"
+    />
 
     <cache name="ClusteringCache"
            maxEntriesLocalHeap="100"
@@ -23,10 +19,8 @@
            timeToLiveSeconds="600"
            memoryStoreEvictionPolicy="LFU">
         <cacheEventListenerFactory
-                class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
-                properties="replicateAsynchronously=true, replicatePuts=true, replicateUpdates=true,replicateUpdatesViaCopy=true, replicateRemovals=true "/>
-        <bootstrapCacheLoaderFactory
-                class="net.sf.ehcache.distribution.RMIBootstrapCacheLoaderFactory" />
+                class="net.sf.ehcache.distribution.jgroups.JGroupsCacheReplicatorFactory"
+                properties="replicateAsynchronously=true, replicatePuts=true,replicateUpdates=true, replicateUpdatesViaCopy=false, replicateRemovals=true" />
     </cache>
 
     <cache name="StandaloneCache"
