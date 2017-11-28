@@ -1,6 +1,7 @@
 package com.wx.ehcache.service.impl;
 
 import com.wx.ehcache.model.CacheVO;
+import com.wx.ehcache.model.InfoVO;
 import com.wx.ehcache.service.IEHCacheService;
 import com.wx.ehcache.util.EHCacheUtil;
 import net.sf.ehcache.Element;
@@ -58,5 +59,20 @@ public class EHCacheServiceImpl implements IEHCacheService {
             }
         }
         return result;
+    }
+
+    @Override
+    public List<InfoVO> getInfo(String cacheName) {
+        Map<String, String> map = EHCacheUtil.getCacheManagerInfo();
+        List<InfoVO> infoVOList = new ArrayList<>();
+        if (map != null) {
+            for (String name : map.keySet()) {
+                InfoVO infoVO = new InfoVO();
+                infoVO.setName(name);
+                infoVO.setValue(map.get(name));
+                infoVOList.add(infoVO);
+            }
+        }
+        return infoVOList;
     }
 }

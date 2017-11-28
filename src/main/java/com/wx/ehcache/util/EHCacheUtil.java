@@ -4,10 +4,15 @@ import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
 import net.sf.ehcache.config.CacheConfiguration;
+import net.sf.ehcache.distribution.CacheManagerPeerProvider;
+import net.sf.ehcache.distribution.CachePeer;
+import net.sf.ehcache.distribution.MulticastRMICacheManagerPeerProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.rmi.RemoteException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class EHCacheUtil {
@@ -30,7 +35,7 @@ public class EHCacheUtil {
             cacheEventListenerFactoryConfiguration.setClass(Constants.CACHE_EVENT_LISTENER_FACTORY_CLASS);
             cacheConfiguration.addCacheEventListenerFactory(cacheEventListenerFactoryConfiguration);
             cacheManager.addCache(new Cache(cacheConfiguration));
-            if("ClusteringCache".equalsIgnoreCase(cacheName)){
+            if ("ClusteringCache".equalsIgnoreCase(cacheName)) {
                 cacheManager.getCacheManagerEventListenerRegistry().notifyCacheAdded(cacheName);
             }
         } else {
@@ -60,6 +65,7 @@ public class EHCacheUtil {
     }
 
     public static Map<Object, Element> listAllElements(String cacheName) {
+        getCacheManagerInfo();
         Map<Object, Element> result = null;
         if (cacheManager.cacheExists(cacheName)) {
             Cache cache = cacheManager.getCache(cacheName);
@@ -87,6 +93,37 @@ public class EHCacheUtil {
         } else {
             logger.warn("No element found in cache(" + cacheName + ")");
         }
+    }
+
+    public static Map<String, String> getCacheManagerInfo() {
+        Map<String, String> result = new HashMap<>();
+        Map<String, CacheManagerPeerProvider> cacheManagerPeerProviderMap = cacheManager.getCacheManagerPeerProviders();
+        if (cacheManagerPeerProviderMap != null) {
+            for (String name : cacheManagerPeerProviderMap.keySet()) {
+                result.put("Peer Provider Name", name);
+                CacheManagerPeerProvider cacheManagerPeerProvider = cacheManagerPeerProviderMap.get(name);
+                result.put("Is RMI Cache Manager", String.valueOf((cacheManagerPeerProvider instanceof MulticastRMICacheManagerPeerProvider)));
+                result.put("Scheme", cacheManagerPeerProvider.getScheme());
+                cacheManagerPeerProvider.init();
+                List remoteCachePeers = cacheManagerPeerProvider.listRemoteCachePeers(cacheManager.getEhcache("ClusteringCache"));
+                if (remoteCachePeers != null) {
+                    for (int i = 0; i < remoteCachePeers.size(); i++) {
+                        if (remoteCachePeers.get(i) instanceof CachePeer) {
+                            CachePeer cachePeer = (CachePeer) remoteCachePeers.get(i);
+                            try {
+                                result.put("Peer Name", cachePeer.getName());
+                                result.put("Peer Url", cachePeer.getUrl());
+                                result.put("Peer Guid", cachePeer.getGuid());
+                                result.put("Peer Url Base", cachePeer.getUrlBase());
+                            } catch (RemoteException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     public static void destroy() {

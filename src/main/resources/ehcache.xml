@@ -5,17 +5,17 @@
 
     <cacheManagerPeerProviderFactory
             class="net.sf.ehcache.distribution.RMICacheManagerPeerProviderFactory"
-            properties="peerDiscovery=automatic, multicastGroupAddress=230.0.0.1,multicastGroupPort=4446, timeToLive=32"/>
+            properties="peerDiscovery=automatic, multicastGroupAddress=239.0.0.1,multicastGroupPort=4446, timeToLive=255"/>
     <!--<cacheManagerPeerProviderFactory-->
             <!--class="net.sf.ehcache.distribution.RMICacheManagerPeerProviderFactory"-->
-            <!--properties="peerDiscovery=manual, hostName=127.0.0.1, port=40001,socketTimeoutMillis=12000, rmiUrls=//127.0.0.1:40002/ClusteringCache"/>-->
+            <!--properties="peerDiscovery=manual, socketTimeoutMillis=12000, rmiUrls=//10.52.124.80:40002/ClusteringCache|//10.52.124.80:40001/ClusteringCache|//10.52.124.32:40001/ClusteringCache"/>-->
 
     <cacheManagerPeerListenerFactory
             class="net.sf.ehcache.distribution.RMICacheManagerPeerListenerFactory"
-            properties="port=40001,socketTimeoutMillis=2000"/>
+            properties="port=40002,socketTimeoutMillis=200000"/>
 
     <cache name="ClusteringCache"
-           maxEntriesLocalHeap="10000"
+           maxEntriesLocalHeap="100"
            maxEntriesLocalDisk="1000"
            eternal="false"
            overflowToDisk="true"
@@ -24,11 +24,13 @@
            memoryStoreEvictionPolicy="LFU">
         <cacheEventListenerFactory
                 class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
-                properties="replicateAsynchronously=true, replicatePuts=true, replicateUpdates=true,replicateUpdatesViaCopy=false, replicateRemovals=true "/>
+                properties="replicateAsynchronously=true, replicatePuts=true, replicateUpdates=true,replicateUpdatesViaCopy=true, replicateRemovals=true "/>
+        <bootstrapCacheLoaderFactory
+                class="net.sf.ehcache.distribution.RMIBootstrapCacheLoaderFactory" />
     </cache>
 
     <cache name="StandaloneCache"
-           maxEntriesLocalHeap="10000"
+           maxEntriesLocalHeap="100"
            maxEntriesLocalDisk="1000"
            eternal="false"
            overflowToDisk="true"
@@ -37,16 +39,14 @@
            memoryStoreEvictionPolicy="LFU"/>
 
     <cache name="ExternalCache"
-           maxEntriesLocalHeap="10000"
+           maxEntriesLocalHeap="100"
            maxEntriesLocalDisk="1000"
            eternal="true"
            overflowToDisk="true"
-           timeToIdleSeconds="300"
-           timeToLiveSeconds="600"
            memoryStoreEvictionPolicy="LFU"/>
 
     <cache name="ShortLifeCycle1MinCache"
-           maxEntriesLocalHeap="10000"
+           maxEntriesLocalHeap="100"
            maxEntriesLocalDisk="1000"
            eternal="false"
            overflowToDisk="true"
