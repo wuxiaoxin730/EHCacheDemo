@@ -1,134 +1,79 @@
 package com.wx.ehcache.util;
 
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.CacheManager;
-import net.sf.ehcache.Element;
-import net.sf.ehcache.config.CacheConfiguration;
-import net.sf.ehcache.distribution.CacheManagerPeerProvider;
-import net.sf.ehcache.distribution.CachePeer;
-import net.sf.ehcache.distribution.MulticastRMICacheManagerPeerProvider;
+import org.ehcache.Cache;
+import org.ehcache.CachePersistenceException;
+import org.ehcache.PersistentCacheManager;
+import org.ehcache.clustered.client.config.builders.ClusteringServiceConfigurationBuilder;
+import org.ehcache.config.builders.CacheConfigurationBuilder;
+import org.ehcache.config.builders.CacheManagerBuilder;
+import org.ehcache.config.builders.ResourcePoolsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.rmi.RemoteException;
+import java.net.URI;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class EHCacheUtil {
-    private static CacheManager cacheManager;
+    private static PersistentCacheManager persistentCacheManager;
 
     private static Logger logger = LoggerFactory.getLogger(EHCacheUtil.class);
 
     static {
-        cacheManager = CacheManager.create();
-    }
-
-    public static String[] retrieveCacheNames() {
-        return cacheManager.getCacheNames();
+        persistentCacheManager = CacheManagerBuilder.newCacheManagerBuilder()
+                .with(ClusteringServiceConfigurationBuilder
+                        .cluster(URI.create("terracotta://localhost/my-application"))
+                        .autoCreate())
+                .build(true);
     }
 
     public static void createDefaultCache(String cacheName) {
-        if (!cacheManager.cacheExists(cacheName)) {
-            CacheConfiguration cacheConfiguration = new CacheConfiguration(cacheName, Constants.DEFAULT_MAX_ENTRIES_LOCAL_HEAP);
-            CacheConfiguration.CacheEventListenerFactoryConfiguration cacheEventListenerFactoryConfiguration = new CacheConfiguration.CacheEventListenerFactoryConfiguration();
-            cacheEventListenerFactoryConfiguration.setClass(Constants.CACHE_EVENT_LISTENER_FACTORY_CLASS);
-            cacheConfiguration.addCacheEventListenerFactory(cacheEventListenerFactoryConfiguration);
-            cacheManager.addCache(new Cache(cacheConfiguration));
-            if ("ClusteringCache".equalsIgnoreCase(cacheName)) {
-                cacheManager.getCacheManagerEventListenerRegistry().notifyCacheAdded(cacheName);
-            }
-        } else {
-            logger.warn("The cache(" + cacheName + ") already existed");
-        }
+        persistentCacheManager.createCache(cacheName, CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, String.class, ResourcePoolsBuilder.heap(1000)).build());
     }
 
     public static void removeCache(String cacheName) {
-        if (cacheManager.cacheExists(cacheName)) {
-            cacheManager.removeCache(cacheName);
-        } else {
-            logger.warn("The cache(" + cacheName + ") does not exist");
-        }
+        persistentCacheManager.removeCache(cacheName);
     }
 
-    public static void addElement(String cacheName, Element element) {
-        if (!cacheManager.cacheExists(cacheName)) {
+    public static void addElement(String cacheName, String key, String value) {
+        Cache<String, String> cache = persistentCacheManager.getCache(cacheName, String.class, String.class);
+        if (cache == null) {
             createDefaultCache(cacheName);
+            cache = persistentCacheManager.getCache(cacheName, String.class, String.class);
         }
-        Cache cache = cacheManager.getCache(cacheName);
-        cache.put(element);
-    }
-
-    public static void addElement(String cacheName, Object elementKey, Object elementValue) {
-        Element element = new Element(elementKey, elementValue);
-        addElement(cacheName, element);
-    }
-
-    public static Map<Object, Element> listAllElements(String cacheName) {
-        getCacheManagerInfo();
-        Map<Object, Element> result = null;
-        if (cacheManager.cacheExists(cacheName)) {
-            Cache cache = cacheManager.getCache(cacheName);
-            result = cache.getAll(cache.getKeys());
+        if (cache.containsKey(key)) {
+            cache.replace(key, value);
         } else {
-            result = new HashMap<>();
-            logger.warn("No cache(" + cacheName + ") exist");
-        }
-        return result;
-    }
-
-    public static Element getElement(String cacheName, Object key) {
-        Element element = null;
-        if (cacheManager.cacheExists(cacheName)) {
-            element = cacheManager.getCache(cacheName).get(key);
-        } else {
-            logger.warn("No element found in cache(" + cacheName + ")");
-        }
-        return element;
-    }
-
-    public static void removeElement(String cacheName, Object key) {
-        if (cacheManager.cacheExists(cacheName)) {
-            cacheManager.getCache(cacheName).remove(key);
-        } else {
-            logger.warn("No element found in cache(" + cacheName + ")");
+            cache.put(key, value);
         }
     }
 
-    public static Map<String, String> getCacheManagerInfo() {
-        Map<String, String> result = new HashMap<>();
-        Map<String, CacheManagerPeerProvider> cacheManagerPeerProviderMap = cacheManager.getCacheManagerPeerProviders();
-        if (cacheManagerPeerProviderMap != null) {
-            for (String name : cacheManagerPeerProviderMap.keySet()) {
-                result.put("Peer Provider Name", name);
-                CacheManagerPeerProvider cacheManagerPeerProvider = cacheManagerPeerProviderMap.get(name);
-                result.put("Is RMI Cache Manager", String.valueOf((cacheManagerPeerProvider instanceof MulticastRMICacheManagerPeerProvider)));
-                result.put("Scheme", cacheManagerPeerProvider.getScheme());
-                cacheManagerPeerProvider.init();
-                List remoteCachePeers = cacheManagerPeerProvider.listRemoteCachePeers(cacheManager.getEhcache("ClusteringCache"));
-                if (remoteCachePeers != null) {
-                    for (int i = 0; i < remoteCachePeers.size(); i++) {
-                        if (remoteCachePeers.get(i) instanceof CachePeer) {
-                            CachePeer cachePeer = (CachePeer) remoteCachePeers.get(i);
-                            try {
-                                result.put("Peer Name", cachePeer.getName());
-                                result.put("Peer Url", cachePeer.getUrl());
-                                result.put("Peer Guid", cachePeer.getGuid());
-                                result.put("Peer Url Base", cachePeer.getUrlBase());
-                            } catch (RemoteException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return result;
+    public static String getElement(String cacheName, String key) {
+        String value = null;
+        Cache<String, String> cache = persistentCacheManager.getCache(cacheName, String.class, String.class);
+        value = cache.get(key);
+        return value;
+    }
+
+    public static void removeElement(String cacheName, String key) {
+        Cache<String, String> cache = persistentCacheManager.getCache(cacheName, String.class, String.class);
+        cache.remove(key);
+    }
+
+    public static Map<String, String> listAll(String cacheName) {
+        Cache<String, String> cache = persistentCacheManager.getCache(cacheName, String.class, String.class);
+        Map<String, String> map = new HashMap<>();
+        cache.forEach(entry -> map.put(entry.getKey(), entry.getValue()));
+        return map;
     }
 
     public static void destroy() {
-        if (cacheManager != null) {
-            cacheManager.shutdown();
+        if (persistentCacheManager != null) {
+            try {
+                persistentCacheManager.destroy();
+            } catch (CachePersistenceException e) {
+                logger.error("An error occurs when destroying cache manager!", e);
+            }
         } else {
             logger.warn("The cache manager has already been shut down!");
         }

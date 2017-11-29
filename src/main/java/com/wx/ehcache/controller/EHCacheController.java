@@ -1,15 +1,14 @@
 package com.wx.ehcache.controller;
 
-import com.wx.ehcache.model.InfoVO;
 import com.wx.ehcache.model.MainVO;
 import com.wx.ehcache.service.IEHCacheService;
+import com.wx.ehcache.util.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import java.util.List;
+import org.thymeleaf.util.StringUtils;
 
 @Controller
 public class EHCacheController {
@@ -21,14 +20,15 @@ public class EHCacheController {
     private String[] cacheNames;
 
     @RequestMapping("/")
-    public String welcome(@ModelAttribute("cacheNames") String[] cacheNames, @ModelAttribute("mainVO") MainVO mainVO) {
-        if (cacheNames != null && cacheNames.length > 0) {
-            this.currentCacheName = cacheNames[0];
+    public String welcome(@ModelAttribute("currentCacheName") String currentCacheName, @ModelAttribute("mainVO") MainVO mainVO) {
+        if (StringUtils.isEmpty(currentCacheName)) {
+            this.currentCacheName = Constants.DEFAULT_CACHE_NAME;
             mainVO.setCurrentCacheName(this.currentCacheName);
         }
         return "main";
     }
 
+    @Deprecated
     @RequestMapping(value = "/init")
     public String init(@ModelAttribute("mainVO") MainVO mainVO, @RequestParam String currentCacheName) {
         this.currentCacheName = currentCacheName;
@@ -61,19 +61,6 @@ public class EHCacheController {
         cacheService.remove(this.currentCacheName, cacheKey);
         prepareModelData(mainVO, this.currentCacheName);
         return "main";
-    }
-
-    @ModelAttribute("cacheNames")
-    public String[] listAllCacheNames() {
-        if (cacheNames == null || cacheNames.length == 0) {
-            cacheNames = cacheService.getCacheNames();
-        }
-        return cacheNames;
-    }
-
-    @ModelAttribute("infoList")
-    public List<InfoVO> getInfo() {
-        return cacheService.getInfo(this.currentCacheName);
     }
 
     private void prepareModelData(MainVO mainVO, String currentCacheName) {

@@ -2,7 +2,7 @@ package com.wx.ehcache.exception;
 
 import com.wx.ehcache.util.ErrorCode;
 
-public class EHCacheException extends Exception {
+public class EHCacheException extends RuntimeException {
     private ErrorCode errorCode;
 
     public EHCacheException() {

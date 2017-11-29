@@ -1,14 +1,13 @@
 package com.wx.ehcache.service.impl;
 
+import com.wx.ehcache.exception.EHCacheException;
 import com.wx.ehcache.model.CacheVO;
 import com.wx.ehcache.model.InfoVO;
 import com.wx.ehcache.service.IEHCacheService;
 import com.wx.ehcache.util.EHCacheUtil;
-import net.sf.ehcache.Element;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -17,7 +16,7 @@ public class EHCacheServiceImpl implements IEHCacheService {
 
     @Override
     public String[] getCacheNames() {
-        return EHCacheUtil.retrieveCacheNames();
+        throw new EHCacheException();
     }
 
     @Override
@@ -32,12 +31,7 @@ public class EHCacheServiceImpl implements IEHCacheService {
 
     @Override
     public String get(String cacheName, String key) {
-        Element element = EHCacheUtil.getElement(cacheName, key);
-        String result = "";
-        if (element != null) {
-            result = (String) element.getObjectValue();
-        }
-        return result;
+        return EHCacheUtil.getElement(cacheName, key);
     }
 
     @Override
@@ -47,32 +41,19 @@ public class EHCacheServiceImpl implements IEHCacheService {
 
     @Override
     public List<CacheVO> listAll(String cacheName) {
-        Map<Object, Element> elements = EHCacheUtil.listAllElements(cacheName);
-        List<CacheVO> result = new ArrayList<>();
-        if (elements != null) {
-            for (Object key : elements.keySet()) {
-                CacheVO cacheVO = new CacheVO();
-                cacheVO.setKey(key.toString());
-                cacheVO.setValue(elements.get(key).getObjectValue().toString());
-                cacheVO.setCreateTime(new Date(elements.get(key).getLatestOfCreationAndUpdateTime()));
-                result.add(cacheVO);
-            }
-        }
-        return result;
+        List<CacheVO> cacheVOList = new ArrayList<>();
+        Map<String, String> map = EHCacheUtil.listAll(cacheName);
+        map.forEach((k, v) -> {
+            CacheVO cacheVO = new CacheVO();
+            cacheVO.setKey(k);
+            cacheVO.setValue(v);
+            cacheVOList.add(cacheVO);
+        });
+        return cacheVOList;
     }
 
     @Override
     public List<InfoVO> getInfo(String cacheName) {
-        Map<String, String> map = EHCacheUtil.getCacheManagerInfo();
-        List<InfoVO> infoVOList = new ArrayList<>();
-        if (map != null) {
-            for (String name : map.keySet()) {
-                InfoVO infoVO = new InfoVO();
-                infoVO.setName(name);
-                infoVO.setValue(map.get(name));
-                infoVOList.add(infoVO);
-            }
-        }
-        return infoVOList;
+        throw new EHCacheException();
     }
 }

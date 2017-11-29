@@ -14,4 +14,6 @@ public interface Constants {
     int DEFAULT_MAX_ENTRIES_LOCAL_HEAP = 100;
 
     String CACHE_EVENT_LISTENER_FACTORY_CLASS = "net.sf.ehcache.distribution.jgroups.JGroupsCacheReplicatorFactory";
+
+    String DEFAULT_CACHE_NAME = "ClusterCache";
 }

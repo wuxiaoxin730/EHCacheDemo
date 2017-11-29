@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface IEHCacheService {
+    @Deprecated
     String[] getCacheNames();
 
     void add(String cacheName, String key, String value);
@@ -19,5 +20,6 @@ public interface IEHCacheService {
 
     List<CacheVO> listAll(String cacheName);
 
+    @Deprecated
     List<InfoVO> getInfo(String cacheName);
 }
