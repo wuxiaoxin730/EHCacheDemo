@@ -9,11 +9,11 @@ import java.util.Map;
 public interface IEHCacheService {
     String[] getCacheNames();
 
-    void add(String cacheName, String key, String value);
+    void add(String cacheName, String key, Object value);
 
     void remove(String cacheName, String key);
 
-    String get(String cacheName, String key);
+    Object get(String cacheName, String key);
 
     void removeAll(String cacheName);
 

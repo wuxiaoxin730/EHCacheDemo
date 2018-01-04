@@ -35,9 +35,7 @@ public class EHCacheUtil {
             cacheEventListenerFactoryConfiguration.setClass(Constants.CACHE_EVENT_LISTENER_FACTORY_CLASS);
             cacheConfiguration.addCacheEventListenerFactory(cacheEventListenerFactoryConfiguration);
             cacheManager.addCache(new Cache(cacheConfiguration));
-            if ("ClusteringCache".equalsIgnoreCase(cacheName)) {
-                cacheManager.getCacheManagerEventListenerRegistry().notifyCacheAdded(cacheName);
-            }
+            cacheManager.getCacheManagerEventListenerRegistry().notifyCacheAdded(cacheName);
         } else {
             logger.warn("The cache(" + cacheName + ") already existed");
         }
@@ -70,6 +68,8 @@ public class EHCacheUtil {
         if (cacheManager.cacheExists(cacheName)) {
             Cache cache = cacheManager.getCache(cacheName);
             result = cache.getAll(cache.getKeys());
+            result.putAll(cache.getAll(cache.getKeysWithExpiryCheck()));
+            result.putAll(cache.getAll(cache.getKeysNoDuplicateCheck()));
         } else {
             result = new HashMap<>();
             logger.warn("No cache(" + cacheName + ") exist");

@@ -5,7 +5,7 @@ import java.util.Date;
 public class CacheVO {
     private String key;
 
-    private String value;
+    private Object value;
 
     private Date createTime;
 
@@ -17,11 +17,11 @@ public class CacheVO {
         this.key = key;
     }
 
-    public String getValue() {
+    public Object getValue() {
         return value;
     }
 
-    public void setValue(String value) {
+    public void setValue(Object value) {
         this.value = value;
     }
 

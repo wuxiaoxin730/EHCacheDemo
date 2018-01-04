@@ -21,7 +21,7 @@ public class EHCacheServiceImpl implements IEHCacheService {
     }
 
     @Override
-    public void add(String cacheName, String key, String value) {
+    public void add(String cacheName, String key, Object value) {
         EHCacheUtil.addElement(cacheName, key, value);
     }
 
@@ -31,11 +31,11 @@ public class EHCacheServiceImpl implements IEHCacheService {
     }
 
     @Override
-    public String get(String cacheName, String key) {
+    public Object get(String cacheName, String key) {
         Element element = EHCacheUtil.getElement(cacheName, key);
-        String result = "";
+        Object result = null;
         if (element != null) {
-            result = (String) element.getObjectValue();
+            result = element.getObjectValue();
         }
         return result;
     }
@@ -53,7 +53,7 @@ public class EHCacheServiceImpl implements IEHCacheService {
             for (Object key : elements.keySet()) {
                 CacheVO cacheVO = new CacheVO();
                 cacheVO.setKey(key.toString());
-                cacheVO.setValue(elements.get(key).getObjectValue().toString());
+                cacheVO.setValue(elements.get(key).getObjectValue());
                 cacheVO.setCreateTime(new Date(elements.get(key).getLatestOfCreationAndUpdateTime()));
                 result.add(cacheVO);
             }
