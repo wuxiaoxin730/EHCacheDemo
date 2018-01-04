@@ -5,14 +5,12 @@
 
     <cacheManagerPeerProviderFactory
             class="net.sf.ehcache.distribution.RMICacheManagerPeerProviderFactory"
-            properties="peerDiscovery=automatic, multicastGroupAddress=239.0.0.1,multicastGroupPort=4446, timeToLive=255"/>
+            properties="peerDiscovery=automatic, multicastGroupAddress=231.12.21.132,multicastGroupPort=45566, timeToLive=32"/>
     <!--<cacheManagerPeerProviderFactory-->
             <!--class="net.sf.ehcache.distribution.RMICacheManagerPeerProviderFactory"-->
-            <!--properties="peerDiscovery=manual, socketTimeoutMillis=12000, rmiUrls=//10.52.124.80:40002/ClusteringCache|//10.52.124.80:40001/ClusteringCache|//10.52.124.32:40001/ClusteringCache"/>-->
+            <!--properties="peerDiscovery=manual, socketTimeoutMillis=12000, rmiUrls=//10.0.52.129:45566/ClusteringCache"/>-->
 
-    <cacheManagerPeerListenerFactory
-            class="net.sf.ehcache.distribution.RMICacheManagerPeerListenerFactory"
-            properties="port=40002,socketTimeoutMillis=200000"/>
+    <cacheManagerPeerListenerFactory class="net.sf.ehcache.distribution.RMICacheManagerPeerListenerFactory"/>
 
     <cache name="ClusteringCache"
            maxEntriesLocalHeap="100"
