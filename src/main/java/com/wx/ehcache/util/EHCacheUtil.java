@@ -3,10 +3,12 @@ package com.wx.ehcache.util;
 import org.ehcache.Cache;
 import org.ehcache.CachePersistenceException;
 import org.ehcache.PersistentCacheManager;
+import org.ehcache.clustered.client.config.builders.ClusteredResourcePoolBuilder;
 import org.ehcache.clustered.client.config.builders.ClusteringServiceConfigurationBuilder;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
 import org.ehcache.config.builders.CacheManagerBuilder;
 import org.ehcache.config.builders.ResourcePoolsBuilder;
+import org.ehcache.config.units.MemoryUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,13 +24,34 @@ public class EHCacheUtil {
     static {
         persistentCacheManager = CacheManagerBuilder.newCacheManagerBuilder()
                 .with(ClusteringServiceConfigurationBuilder
-                        .cluster(URI.create("terracotta://localhost/my-application"))
-                        .autoCreate())
+                        .cluster(URI.create("terracotta://localhost/mams"))
+                        .autoCreate()
+                        .defaultServerResource("primary-server-resource")
+                        .resourcePool("resource-poll-a", 96, MemoryUnit.MB, "second-server-resource")
+                        .resourcePool("resource-poll-b", 32, MemoryUnit.MB))
+                .withCache("clustered-cache-a", CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, String.class,
+                        ResourcePoolsBuilder
+                                .newResourcePoolsBuilder()
+                                .heap(100)
+                                .with(ClusteredResourcePoolBuilder.clusteredDedicated("primary-server-resource", 100, MemoryUnit.MB))))
+                .withCache("shared-cache-a", CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, String.class,
+                        ResourcePoolsBuilder
+                                .newResourcePoolsBuilder()
+                                .with(ClusteredResourcePoolBuilder.clusteredShared("resource-poll-a"))))
+                .withCache("shared-cache-b", CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, String.class,
+                        ResourcePoolsBuilder
+                                .newResourcePoolsBuilder()
+                                .with(ClusteredResourcePoolBuilder.clusteredShared("resource-poll-b"))))
                 .build(true);
     }
 
     public static void createDefaultCache(String cacheName) {
-        persistentCacheManager.createCache(cacheName, CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, String.class, ResourcePoolsBuilder.heap(1000)).build());
+        persistentCacheManager.createCache(cacheName, CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, String.class,
+                ResourcePoolsBuilder
+                        .newResourcePoolsBuilder()
+                        .heap(100)
+                        .with(ClusteredResourcePoolBuilder.clusteredDedicated("resource-poll-b", 32, MemoryUnit.MB)))
+                .build());
     }
 
     public static void removeCache(String cacheName) {
@@ -49,9 +72,8 @@ public class EHCacheUtil {
     }
 
     public static String getElement(String cacheName, String key) {
-        String value = null;
         Cache<String, String> cache = persistentCacheManager.getCache(cacheName, String.class, String.class);
-        value = cache.get(key);
+        String value = cache.get(key);
         return value;
     }
 
