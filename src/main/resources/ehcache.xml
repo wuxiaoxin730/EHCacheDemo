@@ -3,50 +3,25 @@
 
     <diskStore path="java.io.tmpdir"/>
 
-    <!--<cacheManagerPeerProviderFactory-->
-            <!--class="net.sf.ehcache.distribution.jgroups.JGroupsCacheManagerPeerProviderFactory"-->
-            <!--properties="connect=UDP(mcast_addr=231.12.21.132;mcast_port=45566;):PING:MERGE2:FD_SOCK:VERIFY_SUSPECT:pbcast.NAKACK:UNICAST:pbcast.STABLE:FRAG:pbcast.GMS"-->
-            <!--propertySeparator="::"/>-->
-    <!--<cacheManagerPeerProviderFactory-->
-            <!--class="net.sf.ehcache.distribution.jgroups.JGroupsCacheManagerPeerProviderFactory"-->
-            <!--properties="connect=UDP(mcast_addr=231.12.21.132;mcast_port=45566;ip_ttl=32;mcast_send_buf_size=150000;mcast_recv_buf_size=80000):PING(timeout=2000;num_initial_members=6):MERGE2(min_interval=5000;max_interval=10000):FD_SOCK:VERIFY_SUSPECT(timeout=1500):pbcast.NAKACK(retransmit_timeout=3000):UNICAST(timeout=5000):pbcast.STABLE(desired_avg_gossip=20000):FRAG:pbcast.GMS(join_timeout=5000;print_local_addr=true)"-->
-            <!--propertySeparator="::"/>-->
-    <!--<cacheManagerPeerProviderFactory-->
-            <!--class="net.sf.ehcache.distribution.jgroups.JGroupsCacheManagerPeerProviderFactory"-->
-            <!--properties="connect=TCP(bind_port=45566):-->
-            <!--TCPPING(initial_hosts=10.0.32.141[45566],10.0.32.140[45566],10.0.52.130[45566],10.0.52.129[45566];port_range=10;timeout=3000;num_initial_members=5):-->
-            <!--MERGE2(min_interval=3000;max_interval=5000):FD_ALL(interval=5000;timeout=20000):FD(timeout=5000;max_tries=48;):-->
-            <!--VERIFY_SUSPECT(timeout=1500):pbcast.NAKACK(retransmit_timeout=100,200,300,600,1200,2400,4800;discard_delivered_msgs=false):-->
-            <!--pbcast.STABLE(stability_delay=1000;desired_avg_gossip=20000;max_bytes=0):pbcast.GMS(print_local_addr=true;join_timeout=5000)"-->
-            <!--propertySeparator="::" />-->
-    <cacheManagerPeerProviderFactory
-            class="net.sf.ehcache.distribution.jgroups.JGroupsCacheManagerPeerProviderFactory"
-            properties="jgroups_tcp.xml" />
+    <terracottaConfig rejoin="true" url="localhost:9510"/>
+
     <cache name="ClusteringCache"
            maxEntriesLocalHeap="10000"
-           maxEntriesLocalDisk="100000"
+           maxEntriesInCache="1000"
            eternal="false"
-           overflowToDisk="true"
            timeToIdleSeconds="86400"
-           timeToLiveSeconds="86400"
-           memoryStoreEvictionPolicy="LFU">
-        <cacheEventListenerFactory
-                class="net.sf.ehcache.distribution.jgroups.JGroupsCacheReplicatorFactory"
-                properties="replicateAsynchronously=true, replicatePuts=true,replicateUpdates=true, replicateUpdatesViaCopy=false, replicateRemovals=true" />
+           timeToLiveSeconds="86400">
+        <terracotta/>
     </cache>
 
 
     <cache name="productEhcache"
-           maxEntriesLocalHeap="10000"
-           maxEntriesLocalDisk="100000"
+           maxEntriesLocalHeap="1000"
+           maxEntriesInCache="1000"
            eternal="false"
-           overflowToDisk="true"
            timeToIdleSeconds="86400"
-           timeToLiveSeconds="86400"
-           memoryStoreEvictionPolicy="LFU">
-        <cacheEventListenerFactory
-                class="net.sf.ehcache.distribution.jgroups.JGroupsCacheReplicatorFactory"
-                properties="replicateAsynchronously=true, replicatePuts=true,replicateUpdates=true, replicateUpdatesViaCopy=false, replicateRemovals=true" />
+           timeToLiveSeconds="86400">
+        <terracotta/>
     </cache>
 
     <cache name="StandaloneCache"
@@ -77,14 +52,9 @@
     <!-- 缓存半小时 -->
     <cache name="halfHour"
            maxElementsInMemory="10000"
-           maxElementsOnDisk="100000"
            eternal="false"
            timeToIdleSeconds="1800"
-           timeToLiveSeconds="1800"
-           overflowToDisk="false"
-           diskPersistent="false" >
-        <cacheEventListenerFactory
-                class="net.sf.ehcache.distribution.jgroups.JGroupsCacheReplicatorFactory"
-                properties="replicateAsynchronously=true, replicatePuts=true,replicateUpdates=true, replicateUpdatesViaCopy=false, replicateRemovals=true" />
+           timeToLiveSeconds="1800">
+        <terracotta/>
     </cache>
 </ehcache>
